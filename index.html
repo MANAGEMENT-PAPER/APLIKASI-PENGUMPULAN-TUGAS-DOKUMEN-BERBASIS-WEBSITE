@@ -160,7 +160,8 @@
                                 <div class="flex text-sm text-gray-600 justify-center">
                                     <label for="files" class="relative cursor-pointer bg-transparent rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
                                         <span>Pilih file</span>
-                                        <input id="files" name="files" type="file" class="sr-only" multiple required 
+                                        <!-- Menghapus atribut required agar validasi dilakukan via JavaScript (karena input file default bisa tersembunyi/dikosongkan) -->
+                                        <input id="files" name="files" type="file" class="sr-only" multiple 
                                             accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx,.pdf">
                                     </label>
                                     <p class="pl-1">atau tarik dan lepas</p>
@@ -171,7 +172,7 @@
                             </div>
                         </div>
                         <!-- File List Preview -->
-                        <ul id="fileList" class="mt-3 text-sm text-gray-600 space-y-1"></ul>
+                        <ul id="fileList" class="mt-3 space-y-2"></ul>
                     </div>
 
                     <!-- Submit Button -->
@@ -208,17 +209,63 @@
         const fileList = document.getElementById('fileList');
         const submitBtn = document.getElementById('submitBtn');
 
-        // Menampilkan nama file yang dipilih
+        // Array untuk menyimpan file yang dipilih secara dinamis (agar bisa dihapus satu per satu)
+        let selectedFiles = [];
+
+        // Menangkap perubahan pada input file
         fileInput.addEventListener('change', function() {
+            // Jika ada file yang dipilih, masukkan ke dalam array
+            if (this.files.length > 0) {
+                selectedFiles = Array.from(this.files);
+                renderFileList();
+            }
+            // Reset value input agar pengguna bisa memilih file yang sama lagi jika barusan dihapus
+            this.value = ''; 
+        });
+
+        // Fungsi untuk merender daftar file di layar
+        function renderFileList() {
             fileList.innerHTML = '';
-            Array.from(this.files).forEach(file => {
+            
+            selectedFiles.forEach((file, index) => {
                 const li = document.createElement('li');
-                li.className = "flex items-center space-x-2 text-gray-700 bg-gray-100 p-2 rounded-lg";
-                li.innerHTML = `<i data-lucide="file" class="w-4 h-4 text-blue-500"></i><span class="truncate">${file.name}</span> <span class="text-xs text-gray-400">(${(file.size/1024/1024).toFixed(2)} MB)</span>`;
+                li.className = "flex items-center justify-between bg-white border border-gray-200 p-3 rounded-xl shadow-sm";
+                
+                // Bagian Kiri (Ikon + Nama File)
+                const leftDiv = document.createElement('div');
+                leftDiv.className = "flex items-center space-x-3 overflow-hidden";
+                leftDiv.innerHTML = `
+                    <div class="bg-blue-50 p-2 rounded-lg shrink-0">
+                        <i data-lucide="file" class="w-4 h-4 text-blue-600"></i>
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                        <span class="text-sm font-medium text-gray-700 truncate">${file.name}</span>
+                        <span class="text-xs text-gray-400">(${(file.size/1024/1024).toFixed(2)} MB)</span>
+                    </div>
+                `;
+
+                // Bagian Kanan (Tombol Hapus)
+                const deleteBtn = document.createElement('button');
+                deleteBtn.type = "button";
+                deleteBtn.className = "text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors shrink-0";
+                deleteBtn.title = "Hapus file ini";
+                deleteBtn.innerHTML = `<i data-lucide="trash-2" class="w-4 h-4"></i>`;
+                
+                // Event saat tombol hapus diklik
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation(); // Mencegah klik menyebar
+                    selectedFiles.splice(index, 1); // Hapus file dari array
+                    renderFileList(); // Render ulang daftar
+                };
+
+                li.appendChild(leftDiv);
+                li.appendChild(deleteBtn);
                 fileList.appendChild(li);
             });
+            
+            // Re-inisialisasi ikon lucide untuk elemen yang baru ditambahkan
             lucide.createIcons();
-        });
+        }
 
         // Fungsi menampilkan notifikasi
         function showToast(message, type = 'success') {
@@ -250,7 +297,6 @@
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = () => {
-                    // Ekstrak hanya bagian base64-nya saja (hilangkan "data:image/jpeg;base64,")
                     const base64Data = reader.result.split(',')[1];
                     resolve({
                         name: file.name,
@@ -267,26 +313,23 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // Validasi URL GAS
             if(GAS_WEB_APP_URL === "ISI_DENGAN_URL_WEB_APP_ANDA_DISINI" || GAS_WEB_APP_URL === "") {
                 showToast("Sistem belum dikonfigurasi dengan benar (URL GAS kosong). Hubungi Admin.", "error");
                 return;
             }
 
-            const files = fileInput.files;
-            if (files.length === 0) {
+            // Validasi file (Menggunakan array selectedFiles, bukan input element)
+            if (selectedFiles.length === 0) {
                 showToast("Pilih minimal 1 file tugas!", "error");
                 return;
             }
 
-            // Ubah tombol jadi loading
             const originalBtnContent = submitBtn.innerHTML;
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<div class="spinner"></div><span>Mengunggah... Mohon tunggu</span>';
             submitBtn.classList.add('cursor-not-allowed', 'opacity-90');
 
             try {
-                // Ambil data form
                 const formData = {
                     nama: document.getElementById('nama').value,
                     kelas: document.getElementById('kelas').value,
@@ -295,17 +338,13 @@
                     files: []
                 };
 
-                // Proses semua file ke base64
-                const filePromises = Array.from(files).map(file => readFileAsBase64(file));
+                // Proses file dari array selectedFiles
+                const filePromises = selectedFiles.map(file => readFileAsBase64(file));
                 formData.files = await Promise.all(filePromises);
 
-                // Kirim ke Google Apps Script
                 const response = await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
                     body: JSON.stringify(formData),
-                    // mode: 'no-cors' kadang diperlukan jika ada masalah CORS dari Google,
-                    // tapi jika kita return JSON di backend GAS, fetch standard seringkali berhasil.
-                    // Jika gagal, gunakan Content-Type text/plain untuk bypass preflight
                     headers: {
                         'Content-Type': 'text/plain;charset=utf-8', 
                     }
@@ -316,7 +355,8 @@
                 if (result.status === 'success') {
                     showToast("Mantap! Tugas berhasil dikumpulkan.", "success");
                     form.reset();
-                    fileList.innerHTML = '';
+                    selectedFiles = []; // Kosongkan array file
+                    renderFileList(); // Kosongkan UI list file
                 } else {
                     throw new Error(result.message || "Gagal mengunggah file");
                 }
@@ -325,7 +365,6 @@
                 console.error('Error:', error);
                 showToast("Gagal mengumpulkan tugas. Coba lagi ya.", "error");
             } finally {
-                // Kembalikan tombol ke semula
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnContent;
                 submitBtn.classList.remove('cursor-not-allowed', 'opacity-90');
