@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengumpulan Tugas INF - SMP Muhammadiyah 2 Surabaya</title>
+    <!-- Tailwind CSS untuk UI Modern & Responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons untuk Ikon yang modern -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom Font */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
+        
+        /* Animasi Kustom untuk Notifikasi */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        .toast-enter { animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .toast-leave { animation: fadeOut 0.4s ease forwards; }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid #ffffff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-teal-50 to-blue-100 min-h-screen flex flex-col selection:bg-blue-300 selection:text-white">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-center md:justify-start space-x-4">
+            <img src="https://image2url.com/r2/default/images/1775747405233-62d8c403-d607-4d24-a239-5fafed98bf18.blob" alt="Logo SMPM 2 SBY" class="h-12 w-auto object-contain drop-shadow-sm">
+            <h1 class="text-xl md:text-2xl font-bold text-blue-900 tracking-tight">SMP MUHAMMADIYAH 2 SURABAYA</h1>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex items-center justify-center p-4 md:p-8">
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden max-w-5xl w-full flex flex-col md:flex-row">
+            
+            <!-- Left Side - Illustration & Info (Hidden on small mobile) -->
+            <div class="hidden md:flex md:w-2/5 bg-gradient-to-br from-blue-600 to-teal-500 p-10 flex-col justify-between text-white relative overflow-hidden">
+                <!-- Abstract Circles -->
+                <div class="absolute -top-16 -left-16 w-48 h-48 bg-white opacity-10 rounded-full"></div>
+                <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-white opacity-10 rounded-full"></div>
+                
+                <div class="relative z-10">
+                    <h2 class="text-3xl font-bold mb-4">Portal Tugas Informatika</h2>
+                    <p class="text-blue-100 mb-8 leading-relaxed">Kumpulkan tugasmu dengan mudah. Pastikan nama file sudah sesuai format yang diberikan oleh guru.</p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-3 bg-white/10 p-3 rounded-lg backdrop-blur-sm">
+                            <i data-lucide="file-text" class="text-blue-200"></i>
+                            <span class="text-sm">Mendukung Word, Excel, PPT, PDF</span>
+                        </div>
+                        <div class="flex items-center space-x-3 bg-white/10 p-3 rounded-lg backdrop-blur-sm">
+                            <i data-lucide="copy" class="text-blue-200"></i>
+                            <span class="text-sm">Bisa upload lebih dari 1 file sekaligus</span>
+                        </div>
+                        <div class="flex items-center space-x-3 bg-white/10 p-3 rounded-lg backdrop-blur-sm">
+                            <i data-lucide="smartphone" class="text-blue-200"></i>
+                            <span class="text-sm">Akses lancar dari HP maupun Laptop</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SVG Illustration -->
+                <div class="relative z-10 mt-8 flex justify-center">
+                    <svg class="w-48 h-48 text-white opacity-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                        <path d="M12 7v14"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Right Side - Form -->
+            <div class="w-full md:w-3/5 p-8 md:p-12 bg-white">
+                <div class="md:hidden text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Kumpul Tugas INF</h2>
+                    <p class="text-sm text-gray-500 mt-1">Isi data dan unggah file tugasmu</p>
+                </div>
+
+                <form id="uploadForm" class="space-y-6">
+                    
+                    <!-- Nama Lengkap -->
+                    <div>
+                        <label for="nama" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="user" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="text" id="nama" name="nama" required placeholder="Cth: Ahmad Dahlan"
+                                class="pl-10 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                        </div>
+                    </div>
+
+                    <!-- Kelas & Rombel (Grid) -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="kelas" class="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+                            <select id="kelas" name="kelas" required
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors appearance-none">
+                                <option value="" disabled selected>Pilih Kelas</option>
+                                <option value="7">Kelas 7</option>
+                                <option value="8">Kelas 8</option>
+                                <option value="9">Kelas 9</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="rombel" class="block text-sm font-medium text-gray-700 mb-1">Rombel</label>
+                            <select id="rombel" name="rombel" required
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors appearance-none">
+                                <option value="" disabled selected>Pilih Rombel</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                                <option value="E">E</option>
+                                <option value="F">F</option>
+                                <option value="G">G</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Nama Tugas -->
+                    <div>
+                        <label for="tugas" class="block text-sm font-medium text-gray-700 mb-1">Nama Tugas</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="book-open" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="text" id="tugas" name="tugas" required placeholder="Cth: Tugas Excel 1"
+                                class="pl-10 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                        </div>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">File Tugas (Bisa pilih lebih dari 1 file)</label>
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onclick="document.getElementById('files').click()">
+                            <div class="space-y-2 text-center">
+                                <i data-lucide="upload-cloud" class="mx-auto h-12 w-12 text-blue-500"></i>
+                                <div class="flex text-sm text-gray-600 justify-center">
+                                    <label for="files" class="relative cursor-pointer bg-transparent rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
+                                        <span>Pilih file</span>
+                                        <input id="files" name="files" type="file" class="sr-only" multiple required 
+                                            accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx,.pdf">
+                                    </label>
+                                    <p class="pl-1">atau tarik dan lepas</p>
+                                </div>
+                                <p class="text-xs text-gray-500">
+                                    Word, Excel, PPT, PDF hingga 10MB/file
+                                </p>
+                            </div>
+                        </div>
+                        <!-- File List Preview -->
+                        <ul id="fileList" class="mt-3 text-sm text-gray-600 space-y-1"></ul>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="submitBtn"
+                        class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all transform hover:-translate-y-0.5">
+                        <span>Kirim Tugas</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white/80 backdrop-blur-md border-t border-gray-200 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-sm font-medium text-gray-600">
+                created by <span class="text-blue-600 font-bold">GilangIlhams</span> with Gemini
+            </p>
+        </div>
+    </footer>
+
+    <!-- Notifikasi Toast Container -->
+    <div id="toastContainer" class="fixed top-24 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <script>
+        // Inisialisasi ikon Lucide
+        lucide.createIcons();
+
+        // --- GANTI URL INI DENGAN URL WEB APP GAS ANDA ---
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzmF07h0PgI4m1rjwZCjwTPehgVt2REwxkEAQnCQdgUyIOrQ5dtwrMKsVRi4GQ4Wk4Y/exec"; 
+
+        const form = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('files');
+        const fileList = document.getElementById('fileList');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Menampilkan nama file yang dipilih
+        fileInput.addEventListener('change', function() {
+            fileList.innerHTML = '';
+            Array.from(this.files).forEach(file => {
+                const li = document.createElement('li');
+                li.className = "flex items-center space-x-2 text-gray-700 bg-gray-100 p-2 rounded-lg";
+                li.innerHTML = `<i data-lucide="file" class="w-4 h-4 text-blue-500"></i><span class="truncate">${file.name}</span> <span class="text-xs text-gray-400">(${(file.size/1024/1024).toFixed(2)} MB)</span>`;
+                fileList.appendChild(li);
+            });
+            lucide.createIcons();
+        });
+
+        // Fungsi menampilkan notifikasi
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const icon = type === 'success' ? 'check-circle' : 'alert-circle';
+            
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-3 toast-enter max-w-xs md:max-w-sm`;
+            toast.innerHTML = `
+                <i data-lucide="${icon}" class="w-5 h-5"></i>
+                <span class="text-sm font-medium">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            // Hilangkan setelah 5 detik
+            setTimeout(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-leave');
+                setTimeout(() => toast.remove(), 400);
+            }, 5000);
+        }
+
+        // Membaca file sebagai Base64
+        const readFileAsBase64 = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    // Ekstrak hanya bagian base64-nya saja (hilangkan "data:image/jpeg;base64,")
+                    const base64Data = reader.result.split(',')[1];
+                    resolve({
+                        name: file.name,
+                        mimeType: file.type,
+                        base64: base64Data
+                    });
+                };
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+        };
+
+        // Handle Submit Form
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Validasi URL GAS
+            if(GAS_WEB_APP_URL === "ISI_DENGAN_URL_WEB_APP_ANDA_DISINI" || GAS_WEB_APP_URL === "") {
+                showToast("Sistem belum dikonfigurasi dengan benar (URL GAS kosong). Hubungi Admin.", "error");
+                return;
+            }
+
+            const files = fileInput.files;
+            if (files.length === 0) {
+                showToast("Pilih minimal 1 file tugas!", "error");
+                return;
+            }
+
+            // Ubah tombol jadi loading
+            const originalBtnContent = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner"></div><span>Mengunggah... Mohon tunggu</span>';
+            submitBtn.classList.add('cursor-not-allowed', 'opacity-90');
+
+            try {
+                // Ambil data form
+                const formData = {
+                    nama: document.getElementById('nama').value,
+                    kelas: document.getElementById('kelas').value,
+                    rombel: document.getElementById('rombel').value,
+                    tugas: document.getElementById('tugas').value,
+                    files: []
+                };
+
+                // Proses semua file ke base64
+                const filePromises = Array.from(files).map(file => readFileAsBase64(file));
+                formData.files = await Promise.all(filePromises);
+
+                // Kirim ke Google Apps Script
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(formData),
+                    // mode: 'no-cors' kadang diperlukan jika ada masalah CORS dari Google,
+                    // tapi jika kita return JSON di backend GAS, fetch standard seringkali berhasil.
+                    // Jika gagal, gunakan Content-Type text/plain untuk bypass preflight
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8', 
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    showToast("Mantap! Tugas berhasil dikumpulkan.", "success");
+                    form.reset();
+                    fileList.innerHTML = '';
+                } else {
+                    throw new Error(result.message || "Gagal mengunggah file");
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                showToast("Gagal mengumpulkan tugas. Coba lagi ya.", "error");
+            } finally {
+                // Kembalikan tombol ke semula
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnContent;
+                submitBtn.classList.remove('cursor-not-allowed', 'opacity-90');
+            }
+        });
+    </script>
+</body>
+</html>
